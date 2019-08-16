@@ -6,7 +6,7 @@ A Simple, Bootstrap Based Theme. Especially for developers who like to show thei
 
 Open issues if you find bugs or even have trouble installing jekyll or dependencies. :D
 
-Or contact: dongchuan55@gmail.com
+Or contact: gaoxinzhong1992@gmail.com
 
 > Strongly suggest to fork and change project name to create your GitHub Pages instead of downloading it directly. Because in the future, I will develop many funny modules like 'footprint' to show your world wide trip. Could be easier to merge new features in the future.
 
