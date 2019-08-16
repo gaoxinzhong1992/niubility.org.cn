@@ -57,15 +57,7 @@ navs:
 
   -
     href: /open-source
-    label: github
-
-  -
-    href: /blog
-    label: Blog
-
-  -
-    href: /bookmark
-    label: Bookmark
+    label: Open-source
 
   -
     href: /about
