@@ -57,11 +57,7 @@ navs:
 
   -
     href: /open-source
-    label: Open-source
-    
-  -
-    href: /java
-    label: Java    
+    label: Open-source 
 
   -
     href: /about
