@@ -108,6 +108,7 @@ public class StaticTest {
         System.out.println(Child.m);
     }
 }
+```
 
 执行结果如下：
 > 执行了super类静态代码语句块
@@ -117,7 +118,6 @@ public class StaticTest {
 如果注释掉father类中对value定义的那一行，则输出结果如下：
 > 执行了super类静态代码语句块
 5
-```
 
 分析如下：
 > static变量发生在静态解析阶段，也即是初始化之前，此时已经将字段的符号引用转化为了内存引用，也便将它与对应的类关联在了一起，由于在子类中没有查找到与value相匹配的字段，那么value便不会与子类关联在一起，因此并不会触发子类的初始化。
