@@ -110,7 +110,7 @@ class Child extends Father {
 
 public class StaticTest {
     public static void main(String [] args) {
-        System.out.println(Child.m);
+        System.out.println(Child.value);
     }
 }
 ```
