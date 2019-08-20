@@ -87,7 +87,7 @@ Java虚拟机把描述类的数据从class文件中加载到内存，并对数�
 - **1.字段解析**：会先在本类中查找是否包含有简单名称和字段描述符都与目标相匹配的字段，如果有，则查找结束；如果没有，则会按照继承关系从上往下递归搜索该类所实现的各个接口和它们的父接口，还没有，则按照继承关系从上往下递归搜索其父类，直至查找结束，查找流程如下图所示：
 ![字段解析搜索流程](https://niubility.org.cn/assets/images/jvm201908192.png)
 
-```
+``` java
 class Super {
     public static int value = 5;
     static {
@@ -144,7 +144,7 @@ public class StaticTest {
 
 给出一个简单的例子：
 
-```
+``` java
 class Father {
     public static int value = 1;
     static {
@@ -172,6 +172,64 @@ public class ClinitTest {
 如果我们颠倒一下Father类中```public static int value = 1;```语句和```static语句块```的顺序，程序执行后，则会打印出1。很明显是根据规则1，执行Father的```<clinit>（）```方法时，根据顺序先执行了static语句块中的内容，后执行了```public static int value = 1;```语句。
 
 另外，在颠倒二者的顺序之后，如果在static语句块中对value进行访问（比如将value赋给某个变量），在编译时将会报错，因为根据规则1，它只能对value进行赋值，而不能访问。
+
+## 3.类加载器
+
+> 如何寻找类加载器？ 简单看一个例子：
+
+``` java
+/**
+ * create on 2019-08-20 by gaoxinzhong
+ **/
+public class ClassLoaderTest {
+
+    public static void main(String[] args) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        System.out.println(loader);
+        System.out.println(loader.getParent());
+        System.out.println(loader.getParent().getParent());
+    }
+}
+```
+运行后，输出结果：
+
+``` java
+sun.misc.Launcher$AppClassLoader@18b4aac2
+sun.misc.Launcher$ExtClassLoader@77afea7d
+null
+```
+
+从上面的结果可以看出，并没有获取到```ExtClassLoader```的父Loader，原因是```Boostrap Loader```（启动类加载器）是用c++语言实现的，找不到一个确定的父Loader，于是就返回null。
+
+![类加载器层次关系](https://niubility.org.cn/assets/images/jvm201908194.png)
+
+> 注意这里父类加载器并不是通过继承关系实现，而是采用组合实现的。
+
+**虚拟机角度来讲，只存在两种不同的类加载器：**
+
+- **启动（Boostrap）类加载器**：它使用c++实现（这里仅限于Hotspot，也就是JDK1.5之后默认的虚拟机，有很多其他的虚拟机是用Java语言实现的），是虚拟机自身的一部分。
+- **其他类加载器**：这些类加载器都由Java语言实现，独立于虚拟机之外，并且全部继承自抽象类```java.lang.ClassLoader```，这些类加载器需要由启动类加载器加载到内存中之后才能去加载其他的类。
+
+**Java开发人员的角度来看，类加载器大致可以分为以下三类：**
+
+- **启动（Boostrap）类加载器**：启动类加载器主要加载的是jvm自身需要的类，这个类加载使用c++实现，是虚拟机自身的一部分，它负责将```<JAVA_HOME>/lib```路径下的核心类库或```-Xbootclasspath```参数指定的路径下的jar包加载到内存中，注意由于虚拟机是按照文件名识别加载jar包的，如：rt.jar，如果文件名不被虚拟机识别，即使把jar包丢到lib目录下也是没有作用的（出于安全考虑，Boostrap启动类加载器只加载包名为java,javax,sun等开头的类）。
+- **扩展（Extension）类加载器**：扩展类加载器是由Sun公司（已被Oracle收购）实现的```sun.misc.Launcher$ExtClassLoader```类，由Java语言实现，是Lanunch的静态内部类，它负责加载```<JAVA_HOME>/lib/ext```目录下或者由系统变量```-Djava.ext.dirs```指定路径下的类库，开发者可以直接使用标准扩展类加载器。
+- **应用程序（Application）类加载器**：Sun公司实现的```sun.misc.Launcher$AppClassLoader```。它负责加载系统类路径```java -classpath```
+或者```-D java.class.path```指定路径下的库，也就是我们经常用到的classpath路径，开发者可直接使用应用程序类加载，一般情况下该类加载器是程序默认的加载器，通过```ClassLoader#getSystemClassLoader()```方法可以获取到该类加载器。
+
+应用程序都是由这三种类加载器互相配合进行加载的，如果有必要，我们还可以加入自定义的类加载器。因为JVM自带的ClassLoader只是懂得从本地文件系统加载标准的java class文件，因此如果编写了自己的ClassLoader，便可以做到如下几点：
+
+- 0.在执行非置信代码之前，自动验证数字签名。
+- 1.动态地创建符合用户特定需要的定制化构建类。
+- 2.从特定的场所取得java class，例如数据库中和网络中。
+
+**jvm类加载机制**
+
+- **全盘负责**：当一个类加载器负责加载某个Class时，该Class所依赖的和引用的其他Class也将由该类加载器负责载入，除非显示使用另外一个类加载器来载入。
+- **父类委托**：先让父类加载器试图加载该类，只有在父类加载器无法加载该类时才尝试从自己的类路径中加载该类。
+- **缓存机制**：缓存机制将会保证所有加载过的Class都会被缓存，当程序中需要使用某个Class时，类加载器先从缓存区寻找该Class，只有缓存区不存在，系统才会读取该类对应的二进制数据，并将其转换成Class对象，存入缓存区。这就是为什么修改了Class后，必须重启JVM，程序的修改才会生效。
+
+
 
 ## 总结
 
