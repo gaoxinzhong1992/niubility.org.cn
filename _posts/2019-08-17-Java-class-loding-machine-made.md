@@ -213,7 +213,7 @@ null
 ### 3.2 Java开发人员的角度来看，类加载器大致可以分为以下三类
 
 - **启动（Boostrap）类加载器**：启动类加载器主要加载的是jvm自身需要的类，这个类加载使用c++实现，是虚拟机自身的一部分，它负责将```<JAVA_HOME>/lib```路径下的核心类库或```-Xbootclasspath```参数指定的路径下的jar包加载到内存中，注意由于虚拟机是按照文件名识别加载jar包的，如：rt.jar，如果文件名不被虚拟机识别，即使把jar包丢到lib目录下也是没有作用的（出于安全考虑，Boostrap启动类加载器只加载包名为java,javax,sun等开头的类）。
-- **扩展（Extension）类加载器**：扩展类加载器是由Sun公司（已被Oracle收购）实现的```sun.misc.Launcher$ExtClassLoader```类，由Java语言实现，是Lanunch的静态内部类，它负责加载```<JAVA_HOME>/lib/ext```目录下或者由系统变量```-Djava.ext.dirs```指定路径下的类库，开发者可以直接使用标准扩展类加载器。
+- **扩展（Extension）类加载器**：扩展类加载器是由Sun公司（已被Oracle收购）实现的```sun.misc.Launcher$ExtClassLoader```类，由Java语言实现，是Launch的静态内部类，它负责加载```<JAVA_HOME>/lib/ext```目录下或者由系统变量```-Djava.ext.dirs```指定路径下的类库，开发者可以直接使用标准扩展类加载器。
 - **应用程序（Application）类加载器**：Sun公司实现的```sun.misc.Launcher$AppClassLoader```。它负责加载系统类路径```java -classpath```
 或者```-D java.class.path```指定路径下的库，也就是我们经常用到的classpath路径，开发者可直接使用应用程序类加载，一般情况下该类加载器是程序默认的加载器，通过```ClassLoader#getSystemClassLoader()```方法可以获取到该类加载器。
 
