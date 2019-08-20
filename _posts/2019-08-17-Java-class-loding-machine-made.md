@@ -205,12 +205,12 @@ null
 
 > 注意这里父类加载器并不是通过继承关系实现，而是采用组合实现的。
 
-**虚拟机角度来讲，只存在两种不同的类加载器：**
+### 3.1 虚拟机角度来讲，只存在两种不同的类加载器
 
 - **启动（Boostrap）类加载器**：它使用c++实现（这里仅限于Hotspot，也就是JDK1.5之后默认的虚拟机，有很多其他的虚拟机是用Java语言实现的），是虚拟机自身的一部分。
 - **其他类加载器**：这些类加载器都由Java语言实现，独立于虚拟机之外，并且全部继承自抽象类```java.lang.ClassLoader```，这些类加载器需要由启动类加载器加载到内存中之后才能去加载其他的类。
 
-**Java开发人员的角度来看，类加载器大致可以分为以下三类：**
+### 3.2 Java开发人员的角度来看，类加载器大致可以分为以下三类
 
 - **启动（Boostrap）类加载器**：启动类加载器主要加载的是jvm自身需要的类，这个类加载使用c++实现，是虚拟机自身的一部分，它负责将```<JAVA_HOME>/lib```路径下的核心类库或```-Xbootclasspath```参数指定的路径下的jar包加载到内存中，注意由于虚拟机是按照文件名识别加载jar包的，如：rt.jar，如果文件名不被虚拟机识别，即使把jar包丢到lib目录下也是没有作用的（出于安全考虑，Boostrap启动类加载器只加载包名为java,javax,sun等开头的类）。
 - **扩展（Extension）类加载器**：扩展类加载器是由Sun公司（已被Oracle收购）实现的```sun.misc.Launcher$ExtClassLoader```类，由Java语言实现，是Lanunch的静态内部类，它负责加载```<JAVA_HOME>/lib/ext```目录下或者由系统变量```-Djava.ext.dirs```指定路径下的类库，开发者可以直接使用标准扩展类加载器。
@@ -223,12 +223,57 @@ null
 - 1.动态地创建符合用户特定需要的定制化构建类。
 - 2.从特定的场所取得java class，例如数据库中和网络中。
 
-**jvm类加载机制**
+### 3.3 jvm类加载机制
 
 - **全盘负责**：当一个类加载器负责加载某个Class时，该Class所依赖的和引用的其他Class也将由该类加载器负责载入，除非显示使用另外一个类加载器来载入。
 - **父类委托**：先让父类加载器试图加载该类，只有在父类加载器无法加载该类时才尝试从自己的类路径中加载该类。
 - **缓存机制**：缓存机制将会保证所有加载过的Class都会被缓存，当程序中需要使用某个Class时，类加载器先从缓存区寻找该Class，只有缓存区不存在，系统才会读取该类对应的二进制数据，并将其转换成Class对象，存入缓存区。这就是为什么修改了Class后，必须重启JVM，程序的修改才会生效。
 
+### 3.4 自定义类加载器
+
+
+## 4.类的加载方式
+
+> 类的加载有三种方式：
+
+- 0.命令行启动应用的时候有jvm初始化加载。
+- 1.通过Class.forName()方法动态加载。
+- 2.通过ClassLoader.loadClass()方法动态加载。
+
+``` java
+import sun.jvm.hotspot.HelloWorld;
+
+/**
+ * create on 2019-08-20 by gaoxinzhong
+ **/
+public class ClassLoaderTest {
+
+    public static void main(String[] args) throws ClassNotFoundException {
+        ClassLoader loader = HelloWorld.class.getClassLoader();
+        System.out.println(loader);
+        // 使用ClassLoader.loadClass()来加载类，不会执行初始化块。
+        System.out.println(loader.loadClass("ClassLoaderTest2"));
+        // 使用Class.forName()来加载类，默认会执行静态代码块。
+        System.out.println(Class.forName("ClassLoaderTest2"));
+        // 使用Class.forName()来加载类，并指定ClassLoader，初始化时不执行静态块
+        System.out.println(Class.forName("ClassLoaderTest2", false, loader));
+    }
+}
+
+class ClassLoaderTest2 {
+    static  {
+        System.out.println("静态初始化块执行了。");
+    }
+}
+```
+
+> 分别切换加载方式，会有不同的输出结果。
+
+**Class.forName()ClassLoader.loadClass()区别**
+
+- ```Class.forName()```：将类的.class文件加载到jvm之外，还会对类进行解释，并不会执行类的static块。
+- ```ClassLoader.loadClass()```：只做一件事情，就是将.class文件加载到jvm中，不会执行static块的内容，只有在```newInstance```才会执行static块。
+- ```Class.forname(name,initialize,loader)```：带参函数也可以控制是否加载static块。并且只有调用了```newInstance```方法调用构造函数，创建类的对象。
 
 
 ## 总结
