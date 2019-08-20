@@ -58,6 +58,7 @@ Java虚拟机把描述类的数据从class文件中加载到内存，并对数�
 那么变量value在准备阶段过后的初始值为0，而不是3，因为这时候尚未开始执行任何Java方法，而把value赋值为3的```public static```指令是在程序编译后，存放于类构造器```<clinit>()```方法之中的，所以把value赋值为3的动作将在初始化阶段才会执行。
 
 > Java中所有的基本数据类型以及reference类型的默认零值：
+
 ![数据类型及默认值](https://niubility.org.cn/assets/images/jvm201908193.png)
 
 > 这里还需要注意一下几点：
