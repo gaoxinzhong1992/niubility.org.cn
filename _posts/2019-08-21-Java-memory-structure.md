@@ -11,7 +11,7 @@ jvm内存结构
 
 Java虚拟机在运行Java程序时，把它所管理的内存划分为若干个不同的数据区域，主要包括以下五个部分：程序计数器、Java堆、Java虚拟机栈、方法区和本地方法栈。
 
-![jvm内存结构](https://niubility.org.cn/assets/images/jvm201908195.png)
+![jvm内存结构](https://niubility.org.cn/assets/images/jvm201908196.png)
 
 ## 2.程序计数器（Program Counter Register）
 
