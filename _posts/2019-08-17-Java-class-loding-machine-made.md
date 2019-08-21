@@ -231,6 +231,112 @@ null
 
 ### 3.4 自定义类加载器
 
+> 自定义类加载器一般都继承自```ClassLoader```类，只需要重写```findClass()```方法即可。
+
+``` java
+package com.gaoxinzhong.classloader;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * create on 2019-08-21 by gaoxinzhong
+ **/
+public class UserClassLoader extends ClassLoader {
+
+    private String root;
+
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        final byte[] bytes = loadClassByte(name);
+        if (bytes == null) {
+            throw new ClassNotFoundException();
+        } else {
+            return defineClass(name, bytes, 0, bytes.length);
+        }
+    }
+
+    private byte[] loadClassByte(String className) {
+        String fileName = root + File.separatorChar + className.replace('.', File.separatorChar) + ".class";
+        try {
+            InputStream ins = new FileInputStream(fileName);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int length = 0;
+            while ((length = ins.read(buffer)) != -1) {
+                baos.write(buffer, 0, length);
+            }
+            return baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getRoot() {
+        return root;
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        UserClassLoader userClassLoader = new UserClassLoader();
+        userClassLoader.setRoot("/Users/gaoxinzhong/git");
+
+        final Class<?> classLoaderTest = Class.forName("ClassLoaderTest", true, userClassLoader);
+        final Object o = classLoaderTest.newInstance();
+
+        System.out.println(o);
+        System.out.println(o.getClass().getClassLoader()); // 打印由那个classLoader加载。
+    }
+}
+```
+
+> ClassLoaderTest.java 直接用javac编译放在某个目下，不要和```UserClassLoader```放在一起！！！
+
+``` java
+/**
+ * create on 2019-08-21 by gaoxinzhong
+ **/
+public class ClassLoaderTest {
+
+    private String say;
+
+    public ClassLoaderTest() {
+        this.say = "hello world";
+    }
+
+    public String getSay() {
+        return say;
+    }
+
+    public void setSay(String say) {
+        this.say = say;
+    }
+
+    public String toString() {
+        return "[say:" + this.say + "]";
+    }
+}
+```
+
+> 自定义类加载器运行结果
+
+``` java
+[say:hello world]
+com.gaoxinzhong.classloader.UserClassLoader@16b3fc9e
+```
+ 
+> ```自定义类加载器的核心在于对字节码文件的读取，如果是加密的字节码则需要对该类文件进行解密。有几点需要注意：```
+- 这里传递的文件名需要是类的全限定名，即：```package```路径```.Class```格式(com.xx.Xx.class)，因为```defineClass```方法是按照这种格式处理。
+- 最好不要重写loadClass方法，因为这样容易破坏双亲委托模式。
+- 这个类本身可以被```AppClassLoader```加载，不要和```UserClassLoader```（自定义类加载）放在一起！！！否则由于双亲委托机制的存在，会导致该类由```AppClassLoader```加载，而不是通过自定义的类加载器加载。
 
 ## 4.类的加载方式
 
@@ -269,7 +375,7 @@ class ClassLoaderTest2 {
 
 > 分别切换加载方式，会有不同的输出结果。
 
-**Class.forName()ClassLoader.loadClass()区别**
+**Class.forName()和ClassLoader.loadClass()区别**
 
 - ```Class.forName()```：将类的.class文件加载到jvm之外，还会对类进行解释，并不会执行类的static块。
 - ```ClassLoader.loadClass()```：只做一件事情，就是将.class文件加载到jvm中，不会执行static块的内容，只有在```newInstance```才会执行static块。
