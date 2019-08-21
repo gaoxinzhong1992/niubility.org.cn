@@ -229,7 +229,67 @@ null
 - **父类委托**：先让父类加载器试图加载该类，只有在父类加载器无法加载该类时才尝试从自己的类路径中加载该类。
 - **缓存机制**：缓存机制将会保证所有加载过的Class都会被缓存，当程序中需要使用某个Class时，类加载器先从缓存区寻找该Class，只有缓存区不存在，系统才会读取该类对应的二进制数据，并将其转换成Class对象，存入缓存区。这就是为什么修改了Class后，必须重启JVM，程序的修改才会生效。
 
-### 3.4 自定义类加载器
+### 3.4 双亲委派模型
+
+双亲委派模型的工作流程是：如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把请求委托给父加载器去完成，依次向上，因此，所有的类加载请求最终都应该被传递到顶层的启动类加载器中，只有当父加载器在它的搜索范围中没有找到所需的类时，即无法完成该加载，子加载器才会尝试自己去加载该类。
+
+**双亲委派机制：**
+- 当```AppClassLoader```加载一个class时，首先不会自己去尝试加载这个类，而是把这个类加载请求委派给父类加载器（```ExtensionClassLoader```）去完成。
+- 当```ExtensionClassLoader```加载一个class时，也不会自己尝试加载这个类，而是把这个类加载请求委派给父类加载器（```BoostrapClassLoader```）去完成。
+- 如果```BoostrapClassLoader```加载失败，例如：```<JAVA_HOME>/jre/lib```里未找到该class，则使用```ExtensionClassLoader```来尝试加载。
+- 若```ExtensionClassLoader```也加载失败，则会使用```AppClassLoader```来加载，如果```AppClassLoader```也加载失败，则抛出异常：````ClassNotFoundException```。
+
+> ```ClassLoader```源码
+
+``` java
+protected Class<?> loadClass(String name, boolean resolve)
+        throws ClassNotFoundException
+    {
+        synchronized (getClassLoadingLock(name)) {
+            // 首先检查这个class是否已经加载过。
+            Class<?> c = findLoadedClass(name);
+            if (c == null) {
+                long t0 = System.nanoTime();
+                try {
+                    // 如果没有被加载，就委派给父类加载器或者启动类加载器
+                    if (parent != null) {
+                        // 如果存在父类加载器，就委派给父类加载器加载
+                        c = parent.loadClass(name, false);
+                    } else {
+                        // 如果不存在加载器，就检查是否是由启动器加载器加载的类，通过调用本地方法 native Class<?> findBootstrapClass(String name);
+                        c = findBootstrapClassOrNull(name);
+                    }
+                } catch (ClassNotFoundException e) {
+                    // ClassNotFoundException thrown if class not found
+                    // from the non-null parent class loader
+                }
+
+                if (c == null) {
+                    // If still not found, then invoke findClass in order
+                    // to find the class.
+                    long t1 = System.nanoTime();
+                    // 如果父类加载器和启动类加载器都不能完成加载，才调用自身的加载功能。
+                    c = findClass(name);
+
+                    // this is the defining class loader; record the stats
+                    sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);
+                    sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);
+                    sun.misc.PerfCounter.getFindClasses().increment();
+                }
+            }
+            if (resolve) {
+                resolveClass(c);
+            }
+            return c;
+        }
+    }
+```
+
+**双亲委派模型的意义：**
+- 系统类防止内存中出现多份同样的字节码。
+- 保证java程序安全稳定运行。
+
+### 3.5 自定义类加载器
 
 > 自定义类加载器一般都继承自```ClassLoader```类，只需要重写```findClass()```方法即可。
 
@@ -335,8 +395,8 @@ com.gaoxinzhong.classloader.UserClassLoader@16b3fc9e
  
 > ```自定义类加载器的核心在于对字节码文件的读取，如果是加密的字节码则需要对该类文件进行解密。还有几点需要注意：```
 - 这里传递的文件名需要是类的全限定名，即：```package```路径```.Class```格式(com.xx.Xx.class)，因为```defineClass```方法是按照这种格式处理。
-- 最好不要重写loadClass方法，因为这样容易破坏双亲委托模式。
-- 这个类本身可以被```AppClassLoader```加载，不要和```UserClassLoader```（自定义类加载）放在一起！！！否则由于双亲委托机制的存在，会导致该类由```AppClassLoader```加载，而不是通过自定义的类加载器加载。
+- 最好不要重写loadClass方法，因为这样容易破坏双亲委派模型。
+- 这个类本身可以被```AppClassLoader```加载，不要和```UserClassLoader```（自定义类加载）放在一起！！！否则由于双亲委派模型的存在，会导致该类由```AppClassLoader```加载，而不是通过自定义的类加载器加载。
 
 ## 4.类的加载方式
 
