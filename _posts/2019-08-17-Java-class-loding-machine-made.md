@@ -333,7 +333,7 @@ public class ClassLoaderTest {
 com.gaoxinzhong.classloader.UserClassLoader@16b3fc9e
 ```
  
-> ```自定义类加载器的核心在于对字节码文件的读取，如果是加密的字节码则需要对该类文件进行解密。有几点需要注意：```
+> ```自定义类加载器的核心在于对字节码文件的读取，如果是加密的字节码则需要对该类文件进行解密。还有几点需要注意：```
 - 这里传递的文件名需要是类的全限定名，即：```package```路径```.Class```格式(com.xx.Xx.class)，因为```defineClass```方法是按照这种格式处理。
 - 最好不要重写loadClass方法，因为这样容易破坏双亲委托模式。
 - 这个类本身可以被```AppClassLoader```加载，不要和```UserClassLoader```（自定义类加载）放在一起！！！否则由于双亲委托机制的存在，会导致该类由```AppClassLoader```加载，而不是通过自定义的类加载器加载。
