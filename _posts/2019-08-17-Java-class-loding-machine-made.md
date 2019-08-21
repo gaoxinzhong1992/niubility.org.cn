@@ -237,7 +237,7 @@ null
 - 当```AppClassLoader```加载一个class时，首先不会自己去尝试加载这个类，而是把这个类加载请求委派给父类加载器（```ExtensionClassLoader```）去完成。
 - 当```ExtensionClassLoader```加载一个class时，也不会自己尝试加载这个类，而是把这个类加载请求委派给父类加载器（```BoostrapClassLoader```）去完成。
 - 如果```BoostrapClassLoader```加载失败，例如：```<JAVA_HOME>/jre/lib```里未找到该class，则使用```ExtensionClassLoader```来尝试加载。
-- 若```ExtensionClassLoader```也加载失败，则会使用```AppClassLoader```来加载，如果```AppClassLoader```也加载失败，则抛出异常：````ClassNotFoundException```。
+- 若```ExtensionClassLoader```也加载失败，则会使用```AppClassLoader```来加载，如果```AppClassLoader```也加载失败，则抛出异常：```ClassNotFoundException```。
 
 > ```ClassLoader```源码
 
