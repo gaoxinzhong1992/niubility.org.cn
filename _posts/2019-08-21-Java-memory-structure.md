@@ -29,6 +29,7 @@ Java虚拟机在运行Java程序时，把它所管理的内存划分为若干个
 - 2.如果虚拟机在动态扩展栈时无法申请到足够的内存空间，则抛出```OutOfMemoryError```异常。
 
 > 栈深度StackOverflowError异常测试
+
 ``` java
 /**
  * 栈深度StackOverflowError异常测试
@@ -56,6 +57,7 @@ public class VmStackSOF {
 ``` 
 
 > 虚拟机栈OutOfMemmoryError异常 慎重测试！
+
 ``` java
 /**
  * 虚拟机栈OutOfMemmoryError异常
@@ -133,6 +135,7 @@ Java 堆的实现，既可以实现为固定的，也可以是扩展的。当前
 根据Java虚拟机规范的规定，Java堆可以处在物理上不连续的内存空间中，只要逻辑上是连续的即可。如果在堆中没有内存可分配时，并且堆也无法扩展时，将会抛出OutOfMemoryError异常。 
 
 > 堆OutOfMemmoryError异常
+
 ``` java
 import java.util.ArrayList;
 import java.util.List;
