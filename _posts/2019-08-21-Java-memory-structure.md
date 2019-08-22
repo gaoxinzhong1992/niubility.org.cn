@@ -28,6 +28,68 @@ Java虚拟机在运行Java程序时，把它所管理的内存划分为若干个
 - 1.如果线程请求的栈深度大于虚拟机所允许的深度，将抛出```StackOverflowError```异常.
 - 2.如果虚拟机在动态扩展栈时无法申请到足够的内存空间，则抛出```OutOfMemoryError```异常。
 
+> 栈深度StackOverflowError异常测试
+``` java
+/**
+ * 栈深度StackOverflowError异常测试
+ * <p>
+ * create on 2019-08-22 by gaoxinzhong
+ **/
+public class VmStackSOF {
+    private static int index = 1;
+
+    public void increment() {
+        index++;
+        increment();
+    }
+
+    public static void main(String[] args) {
+        VmStackSOF vmStackSOF = new VmStackSOF();
+        try {
+            vmStackSOF.increment();
+        } catch (StackOverflowError error) {
+            System.out.println("stack deep : " + index);
+            error.printStackTrace();
+        }
+    }
+}
+``` 
+
+> 虚拟机栈OutOfMemmoryError异常 慎重测试！
+``` java
+/**
+ * 虚拟机栈OutOfMemmoryError异常
+ * <p>
+ * create on 2019-08-22 by gaoxinzhong
+ **/
+public class VmStackOOM {
+
+    public void stackLeakByThread() {
+        while (true) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+
+                    }
+                }
+            });
+            thread.start();
+        }
+    }
+
+    public static void main(String[] args) {
+        VmStackOOM vmStackOOM = new VmStackOOM();
+        try {
+            vmStackOOM.stackLeakByThread();
+        } catch (OutOfMemoryError outOfMemoryError) {
+            outOfMemoryError.printStackTrace();
+        }
+
+    }
+}
+```
+
 ### 3.1 局部变量表
 
 ```局部变量表是一组变量值存储空间，用于存放方法参数和方法内部定义的局部变量，其中存放的数据的类型是编译期可知的各种基本数据类型、对象引用（reference）和returnAddress类型（它指向了一条字节码指令的地址）。局部变量表所需的内存空间在编译期间完成分配，即在Java程序被编译成Class文件时，就确定了所需分配的最大局部变量表的容量。当进入一个方法时，这个方法需要在栈中分配多大的局部变量空间是完全确定的，在方法运行期间不会改变局部变量表的大小。```
@@ -64,9 +126,31 @@ Java虚拟机在运行Java程序时，把它所管理的内存划分为若干个
 
 ## 5.Java堆（Java Heap）
 
-Java Heap是Java虚拟机所管理的内存中最大的一块，它是所有线程共享的一块内存区域。几乎所有的对象实例和数组都在这类分配内存。Java Heap是垃圾收集器管理的主要区域，因此很多时候也被称为“GC堆”。
+Java Heap是Java虚拟机所管理的内存中最大的一块，它是所有线程共享的一块内存区域。几乎所有的对象实例和数组都在这类分配内存。Java Heap是垃圾收集器管理的主要区域，因此很多时候也被称为“GC堆”。从内存回收角度看，可分为新生代和老年代。而新生代又可分为 Eden 区、From Survivor 区、To Survivor 区等。
+
+Java 堆的实现，既可以实现为固定的，也可以是扩展的。当前虚拟机都按照可扩展来实现，通过 -Xmx 和 -Xms 控制堆大小。
 
 根据Java虚拟机规范的规定，Java堆可以处在物理上不连续的内存空间中，只要逻辑上是连续的即可。如果在堆中没有内存可分配时，并且堆也无法扩展时，将会抛出OutOfMemoryError异常。 
+
+> 堆OutOfMemmoryError异常
+``` java
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 堆OutOfMemmoryError异常
+ * <p>
+ * create on 2019-08-22 by gaoxinzhong
+ **/
+public class HeapOOM {
+    public static void main(String[] args) {
+        List<HeapOOM> heapOOMS = new ArrayList<>();
+        while (true) {
+            heapOOMS.add(new HeapOOM());
+        }
+    }
+}
+```
 
 ## 6.方法区（Method Area）
 
@@ -77,4 +161,10 @@ Java Heap是Java虚拟机所管理的内存中最大的一块，它是所有线
 Java虚拟机规范对这个区域的限制非常宽松，除了和Java堆一样不需要连续的内存和可以选择固定大小或者可扩展外，还可以选择不实现垃圾收集。相对而言，垃圾收集行为在这个区域是比较少出现的，但并非数据进入了方法区就如永久代的名字一样“永久”存在了。这个区域的内存回收目标主要是针对常量池的回收和对类型的卸载，一般来说这个区域的回收“成绩”比较难以令人满意，尤其是类型的卸载，条件相当苛刻，但是这部分区域的回收确实是有必要的。
 
 根据Java虚拟机规范的规定，当方法区无法满足内存分配需求时，将抛出OutOfMemoryError异常。
+
+> 方法区中```运行时常量池```
+
+运行时常量池是方法区的一部分。Class 文件中的常量池用于编译期生成的各种字面量和符号引用，这部分内容在类加载后被存入运行时常量池。
+动态性是运行时常量池相对于 Class 文件常量池的一个重要特征，即不要求常量一定只有编译期才能产生，运行期间也可能将新的常量放入池中。
+运行时常量池受到方法区内存的限制，如果常量池无法再申请内存，就会抛出 OutOfMemoryError 异常。
 
