@@ -27,8 +27,34 @@ Java虚拟机在运行Java程序时，把它所管理的内存划分为若干个
 
 - 1.如果线程请求的栈深度大于虚拟机所允许的深度，将抛出```StackOverflowError```异常.
 - 2.如果虚拟机在动态扩展栈时无法申请到足够的内存空间，则抛出```OutOfMemoryError```异常。
+<!-- 
+> 栈深度StackOverflowError异常测试
 
+``` java
+/**
+ * 栈深度StackOverflowError异常测试
+ * <p>
+ * create on 2019-08-22 by gaoxinzhong
+ **/
+public class VmStackSOF {
+    private static int index = 1;
 
+    public void increment() {
+        index++;
+        increment();
+    }
+
+    public static void main(String[] args) {
+        VmStackSOF vmStackSOF = new VmStackSOF();
+        try {
+            vmStackSOF.increment();
+        } catch (StackOverflowError error) {
+            System.out.println("stack deep : " + index);
+            error.printStackTrace();
+        }
+    }
+}
+``` -->
 
 > 虚拟机栈OutOfMemmoryError异常 慎重测试！
 
