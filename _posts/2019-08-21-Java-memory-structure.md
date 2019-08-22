@@ -28,33 +28,7 @@ Java虚拟机在运行Java程序时，把它所管理的内存划分为若干个
 - 1.如果线程请求的栈深度大于虚拟机所允许的深度，将抛出```StackOverflowError```异常.
 - 2.如果虚拟机在动态扩展栈时无法申请到足够的内存空间，则抛出```OutOfMemoryError```异常。
 
-> 栈深度StackOverflowError异常测试
 
-``` java
-/**
- * 栈深度StackOverflowError异常测试
- * <p>
- * create on 2019-08-22 by gaoxinzhong
- **/
-public class VmStackSOF {
-    private static int index = 1;
-
-    public void increment() {
-        index++;
-        increment();
-    }
-
-    public static void main(String[] args) {
-        VmStackSOF vmStackSOF = new VmStackSOF();
-        try {
-            vmStackSOF.increment();
-        } catch (StackOverflowError error) {
-            System.out.println("stack deep : " + index);
-            error.printStackTrace();
-        }
-    }
-}
-```
 
 > 虚拟机栈OutOfMemmoryError异常 慎重测试！
 
@@ -94,7 +68,7 @@ public class VmStackOOM {
 
 ### 3.1 局部变量表
 
-```局部变量表是一组变量值存储空间，用于存放方法参数和方法内部定义的局部变量，其中存放的数据的类型是编译期可知的各种基本数据类型、对象引用（reference）和returnAddress类型（它指向了一条字节码指令的地址）。局部变量表所需的内存空间在编译期间完成分配，即在Java程序被编译成Class文件时，就确定了所需分配的最大局部变量表的容量。当进入一个方法时，这个方法需要在栈中分配多大的局部变量空间是完全确定的，在方法运行期间不会改变局部变量表的大小。```
+```局部变量表是一组变量值存储空间，用于存放方法参数和方法内部定义的局部变量，其中存放的数据的类型是编译期可知的各种基本数据类型、对象引用（reference）和returnAddress类型（它指向了一条字节码指令的地址）。局部变量表所需的内存空间在编译期间完成分配，即在Java程序被编译成Class文件时，就确定了所需分配的最大局部变量表的容量。当进入一个方法时，这个方法需要在栈中分配多大的局部变量空间是完全确定的，在方法运行期间不会改变局部变量表的大小```。
 
 局部变量表的容量以变量槽（Slot）为最小单位。在虚拟机规范中并没有明确指明一个Slot应占用的内存空间大小（允许其随着处理器、操作系统或虚拟机的不同而发生变化），一个Slot可以存放一个32位以内的数据类型：boolean、byte、char、short、int、float、reference和returnAddresss。reference是对象的引用类型，returnAddress是为字节指令服务的，它执行了一条字节码指令的地址。对于64位的数据类型（long和double），虚拟机会以高位在前的方式为其分配两个连续的Slot空间。
 
