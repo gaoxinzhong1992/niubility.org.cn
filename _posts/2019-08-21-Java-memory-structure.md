@@ -171,6 +171,66 @@ Java虚拟机规范对这个区域的限制非常宽松，除了和Java堆一样
 动态性是运行时常量池相对于 Class 文件常量池的一个重要特征，即不要求常量一定只有编译期才能产生，运行期间也可能将新的常量放入池中。
 运行时常量池受到方法区内存的限制，如果常量池无法再申请内存，就会抛出 OutOfMemoryError 异常。
 
+> 普通类
+
+```java 
+/**
+ * create on 2019-08-21 by gaoxinzhong
+ **/
+public class ClassLoaderTest {
+
+    private String say;
+
+    public ClassLoaderTest() {
+        this.say = "hello world";
+    }
+
+    public String getSay() {
+        return say;
+    }
+
+    public void setSay(String say) {
+        this.say = say;
+    }
+
+    public String toString() {
+        return "[say:" + this.say + "]";
+    }
+}
+```
+> 永久代OutOfMemoryError Permgen space异常
+
+``` java
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 永久代OutOfMemoryError Permgen space异常
+ * create on 2019-08-24 by gaoxinzhong
+ **/
+public class PermGenOom {
+
+    public static void main(String[] args) {
+        URL url = null;
+        List<ClassLoader> classLoaderList = new ArrayList<ClassLoader>();
+        try {
+            url = new File("/Users/gaoxinzhong/git").toURI().toURL();
+            URL[] urls = {url};
+            while (true) {
+                ClassLoader loader = new URLClassLoader(urls);
+                classLoaderList.add(loader);
+                loader.loadClass("ClassLoaderTest");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
 ## 永久代和元空间
 
 ### 1.永久代
