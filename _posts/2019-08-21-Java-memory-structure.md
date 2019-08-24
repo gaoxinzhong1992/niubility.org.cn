@@ -61,7 +61,8 @@ public class VmStackSOF {
 ``` java
 /**
  * 虚拟机栈OutOfMemmoryError异常
- * <p>
+ * <p> 
+ * -Xms20m -Xmx20m
  * create on 2019-08-22 by gaoxinzhong
  **/
 public class VmStackOOM {
@@ -143,6 +144,7 @@ import java.util.List;
 /**
  * 堆OutOfMemmoryError异常
  * <p>
+ * -Xms20m -Xmx20m
  * create on 2019-08-22 by gaoxinzhong
  **/
 public class HeapOOM {
@@ -209,6 +211,8 @@ import java.util.List;
 
 /**
  * 永久代OutOfMemoryError Permgen space异常
+ * <p>
+ * PermSize8m MaxPermSize8m
  * create on 2019-08-24 by gaoxinzhong
  **/
 public class PermGenOom {
