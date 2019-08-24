@@ -175,11 +175,31 @@ Java虚拟机规范对这个区域的限制非常宽松，除了和Java堆一样
 
 ### 1.永久代
 
+绝大部分 Java 程序员应该都见过 "java.lang.OutOfMemoryError: PermGen space "这个异常。这里的 “PermGen space”其实指的就是方法区。不过方法区和“PermGen space”又有着本质的区别。前者是 JVM 的规范，而后者则是 JVM 规范的一种实现，并且只有 HotSpot 才有 “PermGen space”，而对于其他类型的虚拟机，如 JRockit（Oracle）、J9（IBM） 并没有“PermGen space”。由于方法区主要存储类的相关信息，所以对于动态生成类的情况比较容易出现永久代的内存溢出。最典型的场景就是，在 jsp 页面比较多的情况，容易出现永久代内存溢出。我们现在通过动态生成类来模拟 “PermGen space”的内存溢出：
+
 
 ### 2.元空间
 
 ## 常见的OOM及原因
 
-xx1
+**java.lang.OutOfMemoryError:Java heap space**
 
-xx2
+java堆中主要用于存放各种对象实例。当堆中没有足够的空间分配给新的对象时，或者说达到了堆空间设置的最大空间限制，则会抛出此异常。
+
+引起内存溢出的主要原因有：
+- 流量访问大，超过设置的堆空间大小。
+- 内存泄漏，不能被回收的对象消耗过多堆空间。
+
+**java.lang.OutOfMemoryErro:Permgen space**
+
+在jdk1.7中，HotSpot虚拟机使用永久代实现方法区，永久代较小，而且回收效率低，很容易出现内存溢出。
+
+因此，jdk1.8中取消了永久代，使用元空间实现方法区，存放在本地内存中。
+
+**java.lang.OutOfMemoryError:Metaspace**
+
+方法区主要存储类的元信息，Hotspot元数据区。当元空间没有足够的空间分配给加载的类是，会抛出此异常。
+
+引起元空间数据不足主要原因有：
+- 加载的类太多，常见于jsp页面过多时。
+- 元空间被实现在堆外，主要受到进程本身的限制，一般很难出现溢出。
