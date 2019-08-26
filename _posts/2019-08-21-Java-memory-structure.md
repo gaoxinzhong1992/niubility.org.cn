@@ -173,9 +173,9 @@ Java虚拟机规范对这个区域的限制非常宽松，除了和Java堆一样
 动态性是运行时常量池相对于 Class 文件常量池的一个重要特征，即不要求常量一定只有编译期才能产生，运行期间也可能将新的常量放入池中。
 运行时常量池受到方法区内存的限制，如果常量池无法再申请内存，就会抛出 OutOfMemoryError 异常。
 
-## 永久代和元空间
+## 7.永久代和元空间
 
-### 1.永久代
+### 7.1 永久代
 
 绝大部分 Java 程序员应该都见过 "java.lang.OutOfMemoryError: PermGen space "这个异常。这里的 “PermGen space”其实指的就是方法区。不过方法区和“PermGen space”又有着本质的区别。前者是 JVM 的规范，而后者则是 JVM 规范的一种实现，并且只有 HotSpot 才有 “PermGen space”，而对于其他类型的虚拟机，如 JRockit（Oracle）、J9（IBM） 并没有“PermGen space”。由于方法区主要存储类的相关信息，所以对于动态生成类的情况比较容易出现永久代的内存溢出。最典型的场景就是，在 jsp 页面比较多的情况，容易出现永久代内存溢出。我们现在通过动态生成类来模拟 “PermGen space”的内存溢出：
 
@@ -241,7 +241,7 @@ public class PermGenOom {
 }
 ```
 
-### 2.元空间
+### 7.2 元空间
 
 元空间的本质和永久代类似，都是对JVM规范中方法区的实现。不过元空间与永久代之间最大的区别在于：元空间并不在虚拟机中，而是使用本地内存。因此，默认情况下，元空间的大小仅受本地内存限制，但可以通过以下参数来指定元空间的大小：
 
@@ -253,7 +253,7 @@ public class PermGenOom {
 - **-XX:MinMetaspaceFreeRatio**：在GC之后，最小的Metaspace剩余空间容量的百分比，减少为分配空间所导致的垃圾收集
 - **-XX:MaxMetaspaceFreeRatio**：在GC之后，最大的Metaspace剩余空间容量的百分比，减少为释放空间所导致的垃圾收集
 
-## 常见的OOM及原因
+## 8.常见的OOM及原因
 
 **java.lang.OutOfMemoryError:Java heap space**
 
